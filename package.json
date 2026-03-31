@@ -4,7 +4,8 @@
   "private": true,
   "description": "Azure AI Constellation static demo",
   "scripts": {
-    "serve": "python3 -m http.server 4173",
-    "check": "python3 -m py_compile .github/workflows/pages.yml >/dev/null 2>&1 || true"
+    "start": "python3 -m http.server 4173",
+    "serve": "npm run start",
+    "check": "node --check js/config.js && node --check js/particles.js && node --check js/constellation.js && node --check js/dashboard.js && node --check js/activity-log.js && node --check js/app.js"
   }
 }
