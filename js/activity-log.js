@@ -1,0 +1,1 @@
+window.AzureAIConstellation = window.AzureAIConstellation || {};

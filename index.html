@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Azure AI Constellation</title>
+    <meta
+      name="description"
+      content="Interactive GPU data center visualization demo built with GitHub Copilot CLI."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="viewport-warning" id="viewport-warning" hidden>
+      <div class="viewport-warning__content">
+        <h1>Best viewed at 1280px or wider</h1>
+        <p>Resize the window or open on a larger display for the full mission-control layout.</p>
+      </div>
+    </div>
+
+    <div class="app-shell" id="app-shell" data-state="booting" data-focus="metrics" data-view="constellation">
+      <header class="topbar">
+        <div class="brand-block">
+          <div class="brand-mark" aria-hidden="true">⬡</div>
+          <div class="brand-copy">
+            <p class="eyebrow">Built with Copilot CLI</p>
+            <h1>Azure AI Constellation</h1>
+          </div>
+        </div>
+
+        <div class="topbar-status" aria-live="polite">
+          <span class="status-pill status-pill--live" id="state-pill">BOOTING</span>
+          <span class="status-text" id="state-description">Initializing the mission-control display.</span>
+        </div>
+
+        <div class="control-strip" aria-label="Simulation controls">
+          <label class="control control--select">
+            <span class="control__label">Model</span>
+            <select id="model-select" aria-label="Model selector">
+              <option value="gpt5">GPT-5</option>
+              <option value="phi4">Phi-4</option>
+              <option value="dalle4">DALL-E 4</option>
+            </select>
+          </label>
+
+          <label class="control control--slider">
+            <span class="control__label">Scale</span>
+            <input id="scale-slider" type="range" min="0" max="4" step="1" value="3" aria-label="Cluster scale" />
+            <span class="control__value" id="scale-value">2,048 GPUs</span>
+          </label>
+
+          <button class="button button--ghost" id="view-toggle" type="button" aria-pressed="false">
+            Rack topology
+          </button>
+          <button class="button button--primary" id="launch-button" type="button">Launch training</button>
+          <button class="button button--ghost" id="info-button" type="button">Built by Copilot</button>
+          <button class="button button--ghost" id="help-button" type="button">?</button>
+        </div>
+      </header>
+
+      <main class="main-layout">
+        <section class="visual-column panel panel--canvas" id="visual-panel">
+          <div class="panel__header panel__header--tight">
+            <div>
+              <p class="panel__eyebrow">Cluster view</p>
+              <h2 class="panel__title">GPU constellation</h2>
+            </div>
+            <div class="canvas-meta">
+              <span id="view-mode-label">Constellation mode</span>
+              <span id="fps-value">60 FPS target</span>
+            </div>
+          </div>
+
+          <div class="canvas-frame" id="canvas-frame">
+            <canvas id="cluster-canvas" role="img" aria-label="GPU cluster visualization"></canvas>
+            <div class="canvas-overlay canvas-overlay--intro" id="intro-overlay">
+              <p class="canvas-overlay__eyebrow">Azure HPC mission control</p>
+              <h2>Mapping the AI revolution in real time</h2>
+              <p>GPU clusters, training telemetry, node failures, and recovery choreography — all in one static app.</p>
+            </div>
+            <div class="inspect-card" id="inspect-card" hidden></div>
+            <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+          </div>
+
+          <section class="activity-panel panel panel--subtle" id="log-panel">
+            <div class="panel__header panel__header--tight">
+              <div>
+                <p class="panel__eyebrow">Narrative</p>
+                <h2 class="panel__title">Activity log</h2>
+              </div>
+              <span class="panel__badge" id="log-focus-badge">Focus: launching</span>
+            </div>
+            <div class="activity-log" id="activity-log" aria-live="polite"></div>
+          </section>
+        </section>
+
+        <aside class="sidebar panel" id="metrics-panel">
+          <section class="hero-metric">
+            <p class="panel__eyebrow">Hero metric</p>
+            <div class="hero-metric__value-row">
+              <div>
+                <p class="hero-metric__label">Sustained throughput</p>
+                <h2 class="hero-metric__value"><span id="pflops-value">0.0</span> <span class="hero-metric__unit">PFLOPS</span></h2>
+              </div>
+              <div class="hero-metric__delta" id="pflops-delta">Standby</div>
+            </div>
+          </section>
+
+          <section class="metrics-section">
+            <div class="metrics-section__header">
+              <p class="panel__eyebrow">Training</p>
+              <span class="panel__badge" id="training-phase">Idle</span>
+            </div>
+            <div class="progress-shell">
+              <div class="progress-bar">
+                <div class="progress-bar__fill" id="progress-fill"></div>
+              </div>
+              <div class="progress-meta">
+                <span id="progress-value">0.0%</span>
+                <span id="loss-value">Loss —</span>
+              </div>
+            </div>
+            <canvas id="loss-canvas" width="320" height="120" aria-label="Loss curve"></canvas>
+          </section>
+
+          <section class="metrics-section">
+            <div class="metrics-section__header">
+              <p class="panel__eyebrow">Cluster</p>
+              <span class="panel__badge panel__badge--alert" id="ofr-badge">OFR nominal</span>
+            </div>
+            <dl class="metric-grid">
+              <div class="metric-row">
+                <dt>Nodes in use</dt>
+                <dd id="nodes-value">0 / 0</dd>
+              </div>
+              <div class="metric-row">
+                <dt>OFR</dt>
+                <dd id="ofr-value">0</dd>
+              </div>
+              <div class="metric-row">
+                <dt>Uptime</dt>
+                <dd id="uptime-value">99.9%</dd>
+              </div>
+              <div class="metric-row">
+                <dt>GPU util</dt>
+                <dd id="utilization-value">0%</dd>
+              </div>
+              <div class="metric-row">
+                <dt>Memory</dt>
+                <dd id="memory-value">0 / 0 TB</dd>
+              </div>
+              <div class="metric-row">
+                <dt>Power</dt>
+                <dd id="power-value">0.0 MW</dd>
+              </div>
+              <div class="metric-row">
+                <dt>InfiniBand</dt>
+                <dd id="ib-value">0.0 Tb/s</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="metrics-section metrics-section--footnote">
+            <div class="metrics-section__header">
+              <p class="panel__eyebrow">Demo facts</p>
+            </div>
+            <ul class="fact-list">
+              <li>Static HTML / CSS / JS</li>
+              <li>Zero runtime dependencies</li>
+              <li>Pages-ready from <code>main</code></li>
+            </ul>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <aside class="overlay-panel" id="info-panel" hidden>
+      <div class="overlay-panel__card">
+        <div class="overlay-panel__header">
+          <div>
+            <p class="panel__eyebrow">Built by Copilot CLI</p>
+            <h2 class="panel__title">Demo implementation facts</h2>
+          </div>
+          <button class="icon-button" id="close-info" type="button" aria-label="Close info panel">×</button>
+        </div>
+        <div class="overlay-panel__content">
+          <ul class="fact-list fact-list--spacious">
+            <li>Canvas-driven visualization with a simulated Azure GPU fleet</li>
+            <li>Mission-control design system derived directly from PLAN.md</li>
+            <li>Interactive controls, node inspection, failure simulation, and celebration states</li>
+            <li>Designed to run locally or on GitHub Pages with no build step</li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+
+    <aside class="overlay-panel" id="help-panel" hidden>
+      <div class="overlay-panel__card overlay-panel__card--compact">
+        <div class="overlay-panel__header">
+          <div>
+            <p class="panel__eyebrow">Keyboard shortcuts</p>
+            <h2 class="panel__title">Mission control</h2>
+          </div>
+          <button class="icon-button" id="close-help" type="button" aria-label="Close help panel">×</button>
+        </div>
+        <div class="overlay-panel__content">
+          <ul class="shortcut-list">
+            <li><kbd>Space</kbd><span>Launch / pause training</span></li>
+            <li><kbd>+</kbd><span>Scale cluster up</span></li>
+            <li><kbd>-</kbd><span>Scale cluster down</span></li>
+            <li><kbd>V</kbd><span>Toggle rack view</span></li>
+            <li><kbd>C</kbd><span>Trigger celebration</span></li>
+            <li><kbd>R</kbd><span>Reset simulation</span></li>
+            <li><kbd>?</kbd><span>Toggle this help overlay</span></li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+
+    <div class="summary-overlay" id="summary-overlay" hidden>
+      <div class="summary-overlay__card">
+        <p class="panel__eyebrow">Training complete</p>
+        <h2 id="summary-title">Mission accomplished</h2>
+        <p id="summary-copy">Cluster summary will appear here when the run converges.</p>
+        <button class="button button--primary" id="summary-dismiss" type="button">Return to idle glow</button>
+      </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/particles.js"></script>
+    <script src="js/constellation.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/activity-log.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

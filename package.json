@@ -1,0 +1,10 @@
+{
+  "name": "copilot-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Azure AI Constellation static demo",
+  "scripts": {
+    "serve": "python3 -m http.server 4173",
+    "check": "python3 -m py_compile .github/workflows/pages.yml >/dev/null 2>&1 || true"
+  }
+}
