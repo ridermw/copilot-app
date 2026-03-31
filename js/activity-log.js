@@ -29,7 +29,17 @@ window.AzureAIConstellation.ActivityLog = (() => {
       });
     }
 
-    setFocus(focus) {
+    setFocus(focus, state) {
+      if (state === Config.STATES.idle || state === Config.STATES.booting) {
+        this.focusBadge.textContent = "Focus: ready";
+        return;
+      }
+
+      if (state === Config.STATES.complete) {
+        this.focusBadge.textContent = "Focus: summary";
+        return;
+      }
+
       this.focusBadge.textContent = focus === "log" ? "Focus: launching" : "Focus: training";
     }
 

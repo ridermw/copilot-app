@@ -99,14 +99,16 @@ button {
 
 .topbar {
   display: grid;
-  min-height: var(--topbar-height);
+  min-height: calc(var(--topbar-height) + var(--space-4));
   align-items: center;
-  grid-template-columns: auto minmax(220px, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "brand controls"
+    "status controls";
   gap: var(--space-4);
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border);
   background: rgba(10, 14, 26, 0.92);
-  backdrop-filter: blur(8px);
 }
 
 .brand-block,
@@ -124,6 +126,7 @@ button {
 }
 
 .brand-block {
+  grid-area: brand;
   gap: var(--space-3);
 }
 
@@ -170,9 +173,11 @@ button {
 }
 
 .topbar-status {
+  grid-area: status;
   gap: var(--space-3);
-  justify-self: center;
+  justify-self: start;
   min-width: 0;
+  padding-left: 40px;
 }
 
 .status-pill,
@@ -206,9 +211,11 @@ button {
 }
 
 .control-strip {
+  grid-area: controls;
   gap: var(--space-2);
   justify-content: flex-end;
   flex-wrap: wrap;
+  align-self: center;
 }
 
 .control {
@@ -814,11 +821,16 @@ kbd {
 @media (max-width: 1439px) {
   .topbar {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      "brand"
+      "status"
+      "controls";
     justify-items: stretch;
   }
 
   .topbar-status {
     justify-self: start;
+    padding-left: 0;
   }
 }
 
