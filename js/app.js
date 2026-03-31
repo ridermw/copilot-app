@@ -236,7 +236,7 @@ window.AzureAIConstellation = window.AzureAIConstellation || {};
           this.state = Config.STATES.training;
           this.stateStartedAt = now;
           this.trainingStartedAt = now;
-          this.activityLog.setFocus("metrics");
+          this.activityLog.setFocus("metrics", this.state);
           this.activityLog.append("Launch complete. Metrics rail taking primary focus.", "success");
         }
         return;
